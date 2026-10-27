@@ -3,8 +3,9 @@ Vocabulary definition for symbolic music representation.
 Each music event is tokenized as '{PITCH}_{DURATION}', e.g., 'C4_1.0' or 'REST_0.5'.
 """
 import json
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from input.note_parser import midi_to_note_name, VALID_DURATIONS, note_name_to_midi
+
 
 SPECIAL_TOKENS = ["<PAD>", "<SOS>", "<EOS>", "<UNK>"]
 PAD_TOKEN = "<PAD>"
