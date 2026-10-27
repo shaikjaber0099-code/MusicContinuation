@@ -25,15 +25,24 @@ from output.decoder import analyze_melody_sequence
 from playback.audio_spec import prepare_playback_schedule
 
 def create_app(model_dir: str = None) -> Flask:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    templates_dir = os.path.join(current_dir, "templates")
+    static_dir = os.path.join(current_dir, "static")
+
     app = Flask(
         __name__,
-        template_folder=os.path.join(PROJECT_ROOT, "app", "templates"),
-        static_folder=os.path.join(PROJECT_ROOT, "app", "static")
+        template_folder=templates_dir,
+        static_folder=static_dir
     )
     CORS(app)
 
     if model_dir is None:
-        model_dir = os.path.join(PROJECT_ROOT, "models", "weights")
+        possible_dirs = [
+            os.path.join(current_dir, "..", "models", "weights"),
+            os.path.join(PROJECT_ROOT, "models", "weights"),
+            os.path.abspath("models/weights")
+        ]
+        model_dir = next((d for d in possible_dirs if os.path.exists(d)), possible_dirs[0])
 
     # Initialize generator
     generator = MusicGenerator(model_dir=model_dir)
@@ -146,7 +155,22 @@ def create_app(model_dir: str = None) -> Flask:
 
     @app.route('/')
     def index():
-        return render_template('index.html')
+        try:
+            return render_template('index.html')
+        except Exception:
+            # Fallback to direct reading if Jinja template loader fails in serverless bundle
+            candidates = [
+                os.path.join(templates_dir, "index.html"),
+                os.path.join(current_dir, "templates", "index.html"),
+                os.path.join(PROJECT_ROOT, "app", "templates", "index.html"),
+                os.path.abspath("app/templates/index.html")
+            ]
+            for cand in candidates:
+                if os.path.exists(cand):
+                    with open(cand, 'r', encoding='utf-8') as f:
+                        return f.read(), 200, {'Content-Type': 'text/html; charset=utf-8'}
+            return "<h1>Music Continuation Tool</h1><p>Index template could not be loaded.</p>", 500
+
 
     @app.route('/api/health', methods=['GET'])
     def health_check():
