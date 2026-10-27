@@ -375,8 +375,10 @@ def create_app(model_dir: str = None) -> Flask:
 
     return app
 
+# Top-level Flask instance for Vercel serverless deployment and WSGI servers
+app = create_app()
+
 if __name__ == '__main__':
-    app = create_app()
     port = int(os.environ.get('PORT', 5000))
     print(f"Starting Music Continuation Tool on http://127.0.0.1:{port}")
     app.run(host='127.0.0.1', port=port, debug=True)
