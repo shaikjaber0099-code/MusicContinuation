@@ -1,14 +1,17 @@
 {
-  "version": 2,
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "{app/**,models/**}"
+  "services": {
+    "web": {
+      "root": ".",
+      "entrypoint": "app/server.py"
     }
   },
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/api/index.py"
+      "destination": {
+        "type": "service",
+        "service": "web"
+      }
     }
   ]
 }
